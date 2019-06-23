@@ -31,6 +31,10 @@ convert(::Type{pm_Set}, itr) = pm_Set(itr)
 convert(::Type{pm_Set{T}}, itr) where T = pm_Set{T}(itr)
 convert(::Type{pm_Set{T}}, as::AbstractSet) where T = pm_Set{T}(as)
 
+# disambiguations:
+convert(::Type{pm_Set}, as::AbstractSet) = pm_Set(as)
+convert(::Type{pm_Set{T}}, s::pm_Set{T}) where T = s
+
 ################  Guessing the wrapped polymake type  ##################
 
 convert_to_pm_type(T::Type{<:AbstractFloat}) = Float64
@@ -52,11 +56,13 @@ convert_to_pm(x) = throw(ArgumentError("Unrecognized argument type $(typeof(x)).
 
 # no convert for C++ compatible or wrapped polymake types:
 convert_to_pm(x::Union{Int32, Int64, Float64}) = x
-convert_to_pm(x::Union{pm_Vector, pm_Matrix, pm_Array}) = x
-convert_to_pm(x::Union{pm_perl_Object, pm_perl_PropertyValue}) = x
+convert_to_pm(x::Union{pm_Vector, pm_Matrix, pm_Array, pm_Set}) = x
+convert_to_pm(x::Union{pm_perl_Object, pm_perl_PropertyValue, pm_perl_OptionSet}) = x
 
 convert_to_pm(x::T) where T <:Integer = convert(pm_Integer, x)
 convert_to_pm(x::Rational{T}) where T <: Integer = convert(pm_Rational, x)
+
+convert_to_pm(x::AbstractSet) = convert(pm_Set, x)
 
 convert_to_pm(x::AbstractVector{<:Integer}) = convert(pm_Vector{pm_Integer},x)
 convert_to_pm(x::AbstractVector{<:Rational}) = convert(pm_Vector{pm_Rational},x)
